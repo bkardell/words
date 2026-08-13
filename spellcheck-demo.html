@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Domain Dictionaries — Spell Check Custom Dictionary demo</title>
+<script src="src/spellcheck-dictionary-loader-complete.js"></script>
+<style>
+  :root {
+    color-scheme: light;
+    --border: #d0d0d5;
+    --muted: #666;
+    --accent: #3a6df0;
+    --page-bg: #f4f5f7;
+    --editor-bg: #ffffff;
+    --text: #1a1a1a;
+  }
+  html, body {
+    background: var(--page-bg);
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    max-width: 780px;
+    margin: 2rem auto;
+    padding: 0 1.25rem 4rem;
+    line-height: 1.55;
+    color: var(--text);
+  }
+  header {
+    margin-bottom: 1.5rem;
+  }
+  h1 {
+    font-size: 1.4rem;
+    margin-bottom: 0.25rem;
+  }
+  .sub {
+    color: var(--muted);
+    font-size: 0.92rem;
+    margin: 0 0 1rem;
+  }
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+  }
+  .controls label {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  select {
+    font-size: 0.95rem;
+    padding: 0.3rem 0.5rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    min-width: 220px;
+  }
+  .badge {
+    font-size: 0.78rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge.supported { background: #d7f2df; color: #146c2e; }
+  .badge.unsupported { background: #fde3e3; color: #9c1c1c; }
+  .status-line {
+    font-size: 0.85rem;
+    color: var(--muted);
+    min-height: 1.2em;
+  }
+  main {
+    background: var(--editor-bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.5rem 1.75rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  main:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  /* Make native spell-check underlines much harder to miss. Browsers only allow
+     styling a handful of properties on these pseudo-elements (no background/font). */
+  main::spelling-error,
+  main::-webkit-spelling-error {
+    text-decoration-line: underline;
+    text-decoration-style: wavy;
+    text-decoration-color: #ff0033;
+    text-decoration-thickness: 2.5px;
+    text-underline-offset: 3px;
+  }
+  section {
+    margin-bottom: 1.75rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+  section h2 {
+    font-size: 1.05rem;
+    margin: 0 0 0.15rem;
+  }
+  section .file {
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    margin: 0 0 0.6rem;
+  }
+  section p {
+    margin: 0.5rem 0;
+  }
+  footer {
+    margin-top: 1.5rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  code {
+    background: rgba(120,120,140,0.12);
+    padding: 0.1rem 0.3rem;
+    border-radius: 4px;
+    font-size: 0.85em;
+  }
+</style>
+<!--
+  This is the one <link> spellcheck-dictionary-loader-complete.js is watching.
+  Its href starts empty (no dictionary declared yet); the <select> below
+  just changes this href, and the loader script fetches and swaps in the
+  new word list entirely on its own, via a MutationObserver -- this page's
+  own script never calls addWords()/removeWords() directly.
+-->
+<link id="dictLink" data-spellcheck-dictionary href="">
+</head>
+<body>
+
+<header>
+  <h1>Domain Dictionaries — spell check demo</h1>
+  <p class="sub">
+    Pick a dictionary below to load it via the proposed
+    <a href="https://github.com/Igalia/explainers/blob/main/spell-check-dictionary/README.md" target="_blank" rel="noopener">Spell Check Custom Dictionary API</a> which is available in Chrome Canary behind a flag.
+    The whole page content is editable below and has native <code>spellcheck</code> turned on, so once you click inside, CSS will mark some domain specific words as spelling errors.  If you choose from the dropdown, the domain words from the selected dictionary should stop showing red underlines. Selecting a different dictionary removes the previous
+    one's words before adding the new set — only one dictionary is "active" at a time in this demo.  These words came from <a href="https://github.com/bkardell/words">this repo</a> containing many domain terms.
+  </p>
+  <p class="sub">
+    Mechanically, this page itself never calls <code>addWords()</code>/<code>removeWords()</code>.
+    The dropdown just sets the <code>href</code> of a declared
+    <code>&lt;link data-spellcheck-dictionary&gt;</code> tag, and
+    <code>spellcheck-dictionary-loader-complete.js</code> — loaded once in
+    <code>&lt;head&gt;</code> — watches that tag via a <code>MutationObserver</code> and
+    does the fetch-and-swap automatically. It's the same loader described in the
+    project README, exercising its live <code>href</code>-change handling specifically.
+  </p>
+</header>
+
+<div class="controls">
+  <label for="dictSelect">Dictionary:</label>
+  <select id="dictSelect">
+    <option value="">None</option>
+    <option value="terms/starwars.json" data-label="Star Wars">Star Wars (Fiction)</option>
+    <option value="terms/math.json" data-label="Mathematics">Mathematics (Science)</option>
+    <option value="terms/webdev.json" data-label="Web Development">Web Development (Technology)</option>
+    <option value="terms/legal.json" data-label="Legal">Legal (Professional)</option>
+    <option value="terms/stocks.json" data-label="Stock Market">Stock Market (Finance)</option>
+    <option value="terms/culinary.json" data-label="Culinary">Culinary (Food)</option>
+    <option value="terms/coffee.json" data-label="Coffee">Coffee (Food)</option>
+  </select>
+  <span id="apiBadge" class="badge unsupported">checking API…</span>
+</div>
+<div class="status-line" id="statusLine"></div>
+
+<main id="editor" contenteditable="true" spellcheck="true">
+
+  <section id="sec-starwars">
+    <h2>Star Wars</h2>
+    <p class="file">terms/starwars.json</p>
+    <p>On Tatooine, a young Skywalker dreamed of something more than moisture farming. Obi-Wan Kenobi
+    taught him the ways of the Force, showing him how to wield a lightsaber and resist the pull of the
+    Sith. Years later, aboard the Falcon, Chewbacca and Solo helped Leia and the Rebellion smuggle
+    supplies past a blockade near Yavin, while a young Padawan named Kylo wrestled with the legacy of
+    Vader.</p>
+  </section>
+
+  <section id="sec-math">
+    <h2>Mathematics</h2>
+    <p class="file">terms/math.json</p>
+    <p>Every eigenvalue of a real symmetric matrix corresponds to a real eigenvector, a fact that
+    generalizes nicely once you're working over a Riemannian manifold. The professor spent the lecture
+    proving that a smooth map is a homomorphism on the relevant cohomology groups, then showed why the
+    result fails to be bijective without the Hausdorff condition — a nice segue into why Lagrangian
+    mechanics leans so heavily on differential topology.</p>
+  </section>
+
+  <section id="sec-webdev">
+    <h2>Web Development</h2>
+    <p class="file">terms/webdev.json</p>
+    <p>We swapped the old REST layer for GraphQL, added JWT-based auth, and moved session data out of
+    localStorage into a proper backing store. The new build uses webpack under the hood, deploys via a
+    GitHub actions pipeline, and the whole thing runs as a set of microservices behind an OAuth-protected
+    gateway — a big improvement over the npm script we were duct-taping together before.</p>
+  </section>
+
+  <section id="sec-legal">
+    <h2>Legal</h2>
+    <p class="file">terms/legal.json</p>
+    <p>Opposing counsel argued that res judicata barred the claim outright, but our brief countered with
+    an estoppel theory grounded in the prior settlement. The judge, clearly skeptical of the laches
+    defense, granted certiorari on the narrow question of whether mens rea could be inferred from the
+    defendant's conduct — leaving the jury's finding on stare decisis intact.</p>
+  </section>
+
+  <section id="sec-stocks">
+    <h2>Stock Market</h2>
+    <p class="file">terms/stocks.json</p>
+    <p>Shares of AAPL and NVDA rallied on strong earnings, while TSLA gave back some of its recent gains.
+    Financials were mixed — JPM edged higher but BRK.B lagged the broader tape — and traders rotated
+    into SPY and QQQ as a hedge heading into the close.</p>
+  </section>
+
+  <section id="sec-culinary">
+    <h2>Culinary</h2>
+    <p class="file">terms/culinary.json</p>
+    <p>Start the braise with a classic mirepoix, then build a roux to thicken the sauce once the meat is
+    tender. A fine chiffonade of basil brightens the plate, and a quick confit of garlic adds depth
+    without overpowering it — the whole dish leans on umami rather than heavy seasoning to do the work.</p>
+  </section>
+
+  <section id="sec-coffee">
+    <h2>Coffee</h2>
+    <p class="file">terms/coffee.json</p>
+    <p>The barista pulled a ristretto shot with a thick layer of crema, brewed from a washed geisha lot
+    that scored well in cupping. For drip, the shop prefers a Chemex over an Aeropress, and swears a
+    clean portafilter makes a noticeable difference in mouthfeel.</p>
+  </section>
+
+</main>
+
+<footer>
+  <p>
+    <strong>Running this locally:</strong> this page loads dictionary files with <code>fetch()</code>
+    (both from <code>spellcheck-dictionary-loader-complete.js</code> itself, and separately from this
+    page's own script just to display a word count), which browsers block over a plain
+    <code>file://</code> URL. Serve this folder with a simple local server instead, e.g.
+    <code>python3 -m http.server</code>, then open
+    <code>http://localhost:8000/spellcheck-demo.html</code>.
+  </p>
+  <p>
+    <strong>About the API:</strong> <code>document.spellCheckCustomDictionary</code> has two methods <code>.addWords(<em>arrayofwords</em>)</code> and <code>.removeWords(<em>arrayofwords</em>)</code>. It is a proposal, not
+    yet implemented in any shipping browser.  It is available in Chrome Canary and is scheduled for release behind a flag in DevTrial on Chrome desktop 153.  In browsers without it, the dictionary calls below simply
+    do nothing — dictionary words will still show as misspelled regardless of which option is selected.
+    The badge above reflects real-time feature detection.
+  </p>
+</footer>
+
+<script>
+(function () {
+  const select = document.getElementById("dictSelect");
+  const badge = document.getElementById("apiBadge");
+  const statusLine = document.getElementById("statusLine");
+  const dictLink = document.getElementById("dictLink");
+
+  const apiAvailable =
+    typeof document.spellCheckCustomDictionary !== "undefined" &&
+    typeof document.spellCheckCustomDictionary.addWords === "function";
+
+  if (apiAvailable) {
+    badge.textContent = "Custom Dictionary API supported";
+    badge.classList.remove("unsupported");
+    badge.classList.add("supported");
+  } else {
+    badge.textContent = "Custom Dictionary API not available in this browser";
+    badge.classList.remove("supported");
+    badge.classList.add("unsupported");
+  }
+
+  async function handleSelectionChange() {
+    const file = select.value;
+    const label = select.selectedOptions[0]
+      ? select.selectedOptions[0].textContent
+      : "";
+
+    if (!file) {
+      dictLink.removeAttribute("href");
+      statusLine.textContent =
+        "Cleared the declared dictionary's href — spellcheck-dictionary-loader-complete.js should now remove its words, leaving only the browser's built-in dictionary.";
+      return;
+    }
+
+    // This is the whole mechanism: setting href is all this page does.
+    // spellcheck-dictionary-loader-complete.js is watching #dictLink via a
+    // MutationObserver and will fetch this file and swap it in -- removing
+    // whatever the link's previous href had applied -- entirely on its own.
+    dictLink.setAttribute("href", file);
+    statusLine.textContent = `Set the declared dictionary's href to "${file}"…`;
+
+    // Fetch it again here too, purely so this demo can display a word
+    // count below. This is decoupled from, and has nothing to do with,
+    // what the loader script fetches and applies internally.
+    try {
+      const res = await fetch(file);
+      const words = await res.json();
+      statusLine.textContent = apiAvailable
+        ? `Declared dictionary href set to "${file}" (${label}, ${words.length} words). ` +
+          `spellcheck-dictionary-loader-complete.js detected the change and should be swapping dictionaries now.`
+        : `Declared dictionary href set to "${file}" (${label}, ${words.length} words), but this browser ` +
+          `doesn't support the Custom Dictionary API yet, so the loader made no changes.`;
+    } catch (err) {
+      statusLine.textContent = `Set href to "${file}", but couldn't re-fetch it here just to display a word count: ${err.message}`;
+    }
+  }
+
+  select.addEventListener("change", handleSelectionChange);
+})();
+</script>
+
+</body>
+</html>
