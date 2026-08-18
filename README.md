@@ -2,7 +2,9 @@
 
 A collection of domain-specific word lists / glossaries, gathered in one place because — surprisingly — no single project seems to do this well.
 
-These lists were put together initially for use with the proposed [Spell Check Custom Dictionary API](https://github.com/Igalia/explainers/blob/main/spell-check-dictionary/README.md) — but there's nothing dictionary-API-specific about them, so treat them as general-purpose domain word lists usable for any purpose (autocomplete, tokenizers, NER seed lists, whatever).  The repository does include instructions for use with the Spell Check Custom Dictionary API, as well as a handy library for making it declarative.
+These lists were put together initially for use with the proposed [Spell Check Custom Dictionary API](https://github.com/Igalia/explainers/blob/main/spell-check-dictionary/README.md) — but there's nothing dictionary-API-specific about them, so treat them as general-purpose domain word lists usable for any purpose (autocomplete, tokenizers, NER seed lists, whatever).  
+
+*The repository does include instructions for use with the Spell Check Custom Dictionary API, as well as a handy library for making it declarative.  If you're looking for how to use `<link>` for this, skip right to [Using via the declarative library](#using-the-library)
 
 All lists below are JSON arrays of strings.
 
@@ -83,7 +85,7 @@ All lists below are JSON arrays of strings.
 
 ## Use
 
-`spellcheck-demo.html` is a working demo in this folder: a `contenteditable` area with `spellcheck="true"`, split into sample sections for several of the lists above, plus a `<select>` that changes which dictionary is active. It doesn't call the API directly — instead it sets the `href` of a declared `<link data-spellcheck-dictionary>` tag, and `spellcheck-dictionary-loader-complete.js` (loaded on the same page) picks up that change via its `MutationObserver` and does the actual fetch-and-swap, exercising the same live `href`-change handling described below. It feature-detects the API and shows a status badge, since no browser implements it yet. Because it loads JSON files with `fetch()`, it needs to be served (not opened via `file://`) — e.g. `python3 -m http.server` from this folder, then open `http://localhost:8000/spellcheck-demo.html`.
+`spellcheck-demo.html` is a working demo in this folder: a `contenteditable` area with `spellcheck="true"`, split into sample sections for several of the lists above, plus a `<select>` that changes which dictionary is active. It doesn't call the API directly — instead it sets the `href` of a declared `<link data-spellcheck-dictionary>` tag, and `spellcheck-dictionary-loader-complete.js` (loaded on the same page) - it needs to be served (not opened via `file://`).
 
 ### Using via the declative library
 
