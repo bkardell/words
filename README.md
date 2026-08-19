@@ -4,7 +4,7 @@ A collection of domain-specific word lists / glossaries, gathered in one place b
 
 These lists were put together initially for use with the proposed [Spell Check Custom Dictionary API](https://github.com/Igalia/explainers/blob/main/spell-check-dictionary/README.md) — but there's nothing dictionary-API-specific about them, so treat them as general-purpose domain word lists usable for any purpose (autocomplete, tokenizers, NER seed lists, whatever).  
 
-*The repository does include instructions for use with the Spell Check Custom Dictionary API, as well as a handy library for making it declarative.  If you're looking for how to use `<link>` for this, skip right to [Using via the declarative library](#using-the-library)
+*The repository does include instructions for use with the Spell Check Custom Dictionary API, as well as a handy library for making it declarative.  If you're looking for how to use `<link>` for this, skip right to [Using via the declarative library](#using-via-the-declarative-library)
 
 All lists below are JSON arrays of strings.
 
@@ -19,7 +19,7 @@ All lists below are JSON arrays of strings.
   - [Food & Culinary](#food--culinary)
   - [To do / wanted](#to-do--wanted)
 - [Use with the Spell Check Custom Dictionary API](#use)
-  - [Using via the declarative library](#using-the-library)
+  - [Using via the declarative library](#using-via-the-declarative-library)
   - [Using it directly in your own script](#using-it-directly-in-your-own-script)
 
 ## Term lists in this repo
