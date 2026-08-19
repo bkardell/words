@@ -87,7 +87,7 @@ All lists below are JSON arrays of strings.
 
 `spellcheck-demo.html` is a working demo in this folder: a `contenteditable` area with `spellcheck="true"`, split into sample sections for several of the lists above, plus a `<select>` that changes which dictionary is active. It doesn't call the API directly — instead it sets the `href` of a declared `<link data-spellcheck-dictionary>` tag, and `spellcheck-dictionary-loader-complete.js` (loaded on the same page) - it needs to be served (not opened via `file://`).
 
-### Using via the declative library
+### Using via the declarative library
 
 Two small loader scripts in `src/` handle the common cases declaratively, so most pages don't need to call the API at all.
 
